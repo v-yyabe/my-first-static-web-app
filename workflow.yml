@@ -1,16 +1,49 @@
-trigger:
-- main
+name: Deploy web app to Azure Static Web Apps
 
-pool:
-  vmImage: ubuntu-latest
+env:
+  APP_LOCATION: "/src" # location of your client code
+  API_LOCATION: "/" # location of your api source code - optional
+  APP_ARTIFACT_LOCATION: "build" # location of client code build output
 
-steps:
-  - checkout: self
-    submodules: true
-  - task: AzureStaticWebApp@0
-    inputs:
-      app_location: '/'
-      api_location: '/'
-      output_location: 'dist/'
-    env:
-      azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Build And Deploy
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: ${{ env.APP_LOCATION }}
+          api_location: ${{ env.API_LOCATION }}
+          app_artifact_location: ${{ env.APP_ARTIFACT_LOCATION }}
+
+  close:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close
+    steps:
+      - name: Close
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)
+          action: "close"
