@@ -1,9 +1,4 @@
-name: Deploy web app to Azure Static Web Apps
-
-env:
-  APP_LOCATION: "/src" # location of your client code
-  API_LOCATION: "/" # location of your api source code - optional
-  APP_ARTIFACT_LOCATION: "build" # location of client code build output
+name: Azure Static Web Apps CI/CD
 
 on:
   push:
@@ -14,36 +9,36 @@ on:
     branches:
       - main
 
-permissions:
-  issues: write
-  contents: read
-
 jobs:
-  build_and_deploy:
+  build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy
+    name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Build And Deploy
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (i.e. PR comments)
           action: "upload"
+          ###### Repository/Build Configurations ######
           app_location: ${{ env.APP_LOCATION }}
           api_location: ${{ env.API_LOCATION }}
           app_artifact_location: ${{ env.APP_ARTIFACT_LOCATION }}
+          ###### End of Repository/Build Configurations ######
 
-  close:
+  close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
-    name: Close
+    name: Close Pull Request Job
     steps:
-      - name: Close
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)
           action: "close"
