@@ -1,0 +1,74 @@
+[33mcommit fd9dc72993aedb085b4ae4bcbc38c93567f324b2[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31mmy-first-static-web-app/main[m[33m)[m
+Author: v-yyabe <129812183+v-yyabe@users.noreply.github.com>
+Date:   Thu Apr 13 10:14:31 2023 +0900
+
+    Update workflow.yml
+
+[1mdiff --git a/workflow.yml b/workflow.yml[m
+[1mindex 9574b3a..1861f4e 100644[m
+[1m--- a/workflow.yml[m
+[1m+++ b/workflow.yml[m
+[36m@@ -1,16 +1,49 @@[m
+[31m-trigger:[m
+[31m-- main[m
+[32m+[m[32mname: Deploy web app to Azure Static Web Apps[m
+ [m
+[31m-pool:[m
+[31m-  vmImage: ubuntu-latest[m
+[32m+[m[32menv:[m
+[32m+[m[32m  APP_LOCATION: "/src" # location of your client code[m
+[32m+[m[32m  API_LOCATION: "/" # location of your api source code - optional[m
+[32m+[m[32m  APP_ARTIFACT_LOCATION: "build" # location of client code build output[m
+ [m
+[31m-steps:[m
+[31m-  - checkout: self[m
+[31m-    submodules: true[m
+[31m-  - task: AzureStaticWebApp@0[m
+[31m-    inputs:[m
+[31m-      app_location: '/'[m
+[31m-      api_location: '/'[m
+[31m-      output_location: 'dist/'[m
+[31m-    env:[m
+[31m-      azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)[m
+[32m+[m[32mon:[m
+[32m+[m[32m  push:[m
+[32m+[m[32m    branches:[m
+[32m+[m[32m      - main[m
+[32m+[m[32m  pull_request:[m
+[32m+[m[32m    types: [opened, synchronize, reopened, closed][m
+[32m+[m[32m    branches:[m
+[32m+[m[32m      - main[m
+[32m+[m
+[32m+[m[32mpermissions:[m
+[32m+[m[32m  issues: write[m
+[32m+[m[32m  contents: read[m
+[32m+[m
+[32m+[m[32mjobs:[m
+[32m+[m[32m  build_and_deploy:[m
+[32m+[m[32m    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')[m
+[32m+[m[32m    runs-on: ubuntu-latest[m
+[32m+[m[32m    name: Build and Deploy[m
+[32m+[m[32m    steps:[m
+[32m+[m[32m      - uses: actions/checkout@v3[m
+[32m+[m[32m        with:[m
+[32m+[m[32m          submodules: true[m
+[32m+[m[32m      - name: Build And Deploy[m
+[32m+[m[32m        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9[m
+[32m+[m[32m        with:[m
+[32m+[m[32m          azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)[m
+[32m+[m[32m          repo_token: ${{ secrets.GITHUB_TOKEN }}[m
+[32m+[m[32m          action: "upload"[m
+[32m+[m[32m          app_location: ${{ env.APP_LOCATION }}[m
+[32m+[m[32m          api_location: ${{ env.API_LOCATION }}[m
+[32m+[m[32m          app_artifact_location: ${{ env.APP_ARTIFACT_LOCATION }}[m
+[32m+[m
+[32m+[m[32m  close:[m
+[32m+[m[32m    if: github.event_name == 'pull_request' && github.event.action == 'closed'[m
+[32m+[m[32m    runs-on: ubuntu-latest[m
+[32m+[m[32m    name: Close[m
+[32m+[m[32m    steps:[m
+[32m+[m[32m      - name: Close[m
+[32m+[m[32m        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9[m
+[32m+[m[32m        with:[m
+[32m+[m[32m          azure_static_web_apps_api_token: $(5110920d28a9b6552ec165607e3e7ad72f206c0e10e088af709831dbebf660cc3-c3bf4980-2b94-4eb2-966b-5c3e1d878a9e00056795)[m
+[32m+[m[32m          action: "close"[m
